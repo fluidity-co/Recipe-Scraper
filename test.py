@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-
+from selenium.webdriver import ActionChains
 import time
 import csv
 
@@ -32,7 +32,9 @@ with open("recipes.csv", "w+") as file:
 	csvWrite = csv.writer(file, delimiter=",")
 	
 	for page_index in range(1,n+1):
+		
 		driver.get("https://www.food2fork.com/index/" + str(page_index))
+
 
 
 		recipe_links = driver.find_elements_by_class_name("recipe-link")
@@ -41,13 +43,20 @@ with open("recipes.csv", "w+") as file:
 		for index, link in enumerate(recipe_links):
 			print("On page {}/{} and recipe {}/{}".format(page_index, n+1, index+1, length))
 			# Opens new tab 
-			driver.execute_script('''window.open("http://www.google.com","_blank");''')
 			url = link.get_attribute("href")
+			actions = ActionChains(driver)
+			actions.key_down(Keys.CONTROL).click(link).key_up(Keys.SHIFT).perform()
+			#driver.execute_script('''window.open("http://www.google.com","_blank");''')
+			
+			
 
 			tabs = driver.window_handles
 			# Opens the recipe link in the new tab and switches the driver to it
 			driver.switch_to.window(tabs[1])
+			
+			
 			driver.get(url)
+			
 			
 			# Finds recipe name
 			recipe_name = driver.find_elements_by_class_name("recipe-title")[0].text
@@ -61,7 +70,7 @@ with open("recipes.csv", "w+") as file:
 			csvWrite.writerow([unicode_to_ascii(recipe_name), unicode_to_ascii(link.get_attribute("href")),ingredients])
 			driver.close()
 			driver.switch_to.window(tabs[0])
-			time.sleep(5)
+			
 
 file.close()
 
